@@ -2,7 +2,7 @@ from typing import List
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from model import QWen3Doctor
+from scripts.model import QWen3Doctor
 
 class Message(BaseModel):
     text: str

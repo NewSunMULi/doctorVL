@@ -1,3 +1,7 @@
+numpy
+matplotlib
+nibabel
+torch
 starlette
 uvicorn>=0.40.0
 fastapi>=0.128.0
