@@ -93,19 +93,18 @@ MedImageAnalyzer/
 
 1. 克隆项目至本地
 ```bash
-  git clone https://github.com/NewSunMULi/doctorVL.git
+git clone https://github.com/NewSunMULi/doctorVL.git
 ```
 2. 安装依赖
- - 1. 安装pytorch及其配套库
+- 1. 安装pytorch及其配套库
 ```bash
-  pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu126
+pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu126
 ```
 - 2. 安装剩下的依赖项
 ```bash
-  pip3 install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
 ## 快速开始
 1. 进入虚拟环境
 2. 运行主程序 main.py
----
