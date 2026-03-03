@@ -127,9 +127,9 @@ class NibImage(Dataset):
 
 
 if __name__ == '__main__':
-    train = NibImage('../../dataset/50/P1.nii.gz', '../../dataset/50/tumor.nii.gz', 64)
+    train = NibImage('../../dataset/image/train/50/P1.nii.gz', '../../dataset/image/train/50/tumor.nii.gz', 64)
     model = UNet(in_channels=1, out_channels=2)
-    model.load_state_dict(torch.load('../../model/UNet/unet.pth'))
+    model.load_state_dict(torch.load('../../model/unet/unet.pth'))
     # 训练代码
     # criterion = nn.CrossEntropyLoss()
     # optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
@@ -145,9 +145,9 @@ if __name__ == '__main__':
     #             optimizer.step()
     #             pbar.update(1)
     #             pbar.set_postfix(loss=loss.item())
-    # torch.save(model.state_dict(), '../../model/UNet/unet.pth')
+    # torch.save(model.state_dict(), '../../model/unet/unet.pth')
     model.eval()
-    test = NibImage('../../dataset/50/P2.nii.gz', size=64, is_train=False)
+    test = NibImage('../../dataset/image/train/50/P2.nii.gz', size=64, is_train=False)
     with torch.no_grad():
         op1 = model(test[104:105])
         d = test.transform_to_array()[0]
