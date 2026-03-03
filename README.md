@@ -1,55 +1,111 @@
-# 项目使用
-在Pycharm新建项目后，将该项目压缩包解压至你刚建好的项目文件夹下，并创建一个空文件夹model<br>
+# 医学图像智能分析系统
 
-项目结构:
+## 项目概述
+本项目是一个结合了视觉感知、语义理解与知识增强的医学图像智能分析系统。核心采用 **UNet** 模型进行高精度医学图像分割，并集成 **QWen3-VL (Vision-Language)** 多模态大模型。通过引入**医学知识库**，系统能够进行基于证据的推理与报告生成，显著提升分析的准确性与可信度。系统通过**FastAPI**提供服务，支持**C++ Qt6桌面客户端**与**Web (React+Next.js)** 两种前端进行交互，实现跨平台部署与应用。
+
+## 核心技术栈
+- **图像分割**: UNet (PyTorch 实现)
+- **多模态大模型**: QWen3-VL (基于 Transformers 库)
+- **知识检索与增强**: RAG (检索增强生成) 框架，向量数据库 (如Chroma, Milvus)
+- **后端服务**: FastAPI (Python)
+- **跨平台**: Windows / Linux (桌面与服务器)
+
+## 项目文件结构
 ```
-.venv
-.idea
-dataset
-    你的数据集
-model
-    你的模型文件
-output
-    你的输出文件
-scripts
-    api_model.py
-    example.py
-    example2.py
-    main.py
-    model.py
-    model_download.py
+MedImageAnalyzer/
+├── .venv/ 
+│
+├── dataset/                          # 数据集
+│   ├── image/                       # 原始医学图像 (如: .dcm, .nii, .png)
+│   │   ├── train/
+│   │   └── val/
+│   └── llm/                         # 与大模型训练/微调相关的文本资料
+│       ├── qa_pairs.json           # 医学影像QA对
+│       └── reports/                # 样例诊断报告文本
+│
+├── model/                           # 模型存储
+│   ├── unet/                       # UNet模型权重 (.pth)
+│   └── qwen/                       # QWen3-VL模型文件
+│
+├── knowledge_base/                  # 【仍在规划】医学知识库核心模块
+│   ├── raw_documents/              # 原始知识文档 (PDF, TXT, JSON)
+│   ├── processed/                  # 清洗、分段后的文本
+│   ├── vector_db/                  # 向量数据库存储与索引文件
+│   └── builder.py                  # 知识库构建脚本 (文档加载、分割、向量化、入库)
+│
+├── output/                          # 程序输出
+│   ├── uet/                       # UNet分割结果图像
+│   └── qwen/                       # 大模型生成的文本报告
+│
+├── scripts/                         # Python核心源代码
+│   ├── Image/                      # 图像分割模块
+│   │   ├── unet.py          # UNet模型定义及训练
+│   │   ├── showImg.py          # 图像查看
+│   │   └── u_api.py            # UNet API
+│   │
+│   ├── Qwen/                       # 大模型交互模块
+│   │   ├── model.py        # 大模型部署与微调
+│   │   ├── model_download.py       # 模型下载
+│   │   └── api_model.py       # 大模型 API
+│   │
+│   ├── kb_retriever/               # 【仍在规划】知识库检索模块
+│   │   ├── retriever.py           # 检索器：根据查询从向量库召回相关文档
+│   │   └── rerank.py              # (可选) 对召回结果进行重排序
+│   │
+│   ├── api.py                      # FastAPI应用主文件，提供REST端点
+│   ├── main.py                     # 本地测试与命令行主入口
+│   └── config.yaml                 # 全局配置文件
+│
+├── docs/                            # 项目文档
+├── requirements.txt                 # Python依赖列表
+├── docker-compose.yml              # 服务端容器化部署配置
+└── README.md                       # 本文件
 ```
 
-# 依赖安装
-使用 pip 安装相应依赖:
-```shell
-pip install -r requirements.txt
+## 系统工作流程 (增强版)
+1.  **上传与分割**：用户上传医学图像，服务端调用UNet模型生成分割掩膜。
+2.  **信息整合**：将原图、分割掩膜、用户可能的文本问题（如“这个结节是恶性可能大吗？”）整合为多模态查询。
+3.  **知识检索**：从`knowledge_base`中检索与当前查询最相关的医学文献、指南或病例片段（RAG）。
+4.  **推理与报告**：将`[原始图像]`、`[分割结果]`、`[用户问题]`和`[检索到的相关知识]`一同输入QWen3-VL模型，生成基于证据的分析报告。
+5.  **返回与展示**：服务端返回分割结果图和包含引用来源的智能报告，客户端进行可视化展示。
+
+## 未来扩展方向
+1.  **核心升级：知识库构建与增强**
+    *   **知识库构建**：实现自动化流水线，支持批量导入医学教科书、期刊论文、临床指南（PDF/XML），并完成文本提取、清洗、结构化分段。
+    *   **混合检索**：结合密集向量检索与关键词（BM25）检索，提高知识召回的查全率与查准率。
+    *   **知识图谱集成**：尝试与结构化医学知识图谱（如UMLS）关联，实现更深层次的逻辑推理。
+    *   **知识更新与评估**：建立知识库版本管理和效果评估机制，确保知识的时效性与准确性。
+
+2.  **模型与算法**
+    *   **支持3D影像**：扩展至3D UNet，处理CT、MRI等体积数据。
+    *   **多模型集成**：除UNet外，集成SAM（Segment Anything Model）等通用模型进行交互式分割。
+    *   **大模型微调**：基于本地医学QA数据对QWen3-VL进行指令微调（SFT），使其术语和推理风格更专业化。
+
+3.  **系统与应用**
+    *   **DICOM全面支持**：深化对DICOM标准及序列的读取、处理和元信息利用。
+    *   **工作流与协作**：开发基于Web的用户管理、项目管理和分析历史对比功能，支持团队协作。
+    *   **主动学习平台**：构建界面，允许专家对模型输出（分割/报告）进行快速修正，并将修正数据回流至训练集，形成模型迭代闭环。
+    *   **边缘部署**：探索使用ONNX Runtime或TensorRT对UNet模型进行优化，以支持在边缘设备（如工作站）上的低延迟推理。
+
+4.  **多模态知识库**：探索将影像特征与文本描述共同嵌入向量空间，构建“影像-文本”联合知识库，实现“以图搜图”和“以文搜图”的病例检索功能。
+
+## 环境配置
+
+1. 克隆项目至本地
+```bash
+  git clone https://github.com/NewSunMULi/doctorVL.git
+```
+2. 安装依赖
+ - 1. 安装pytorch及其配套库
+```bash
+  pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu126
+```
+- 2. 安装剩下的依赖项
+```bash
+  pip3 install -r requirements.txt
 ```
 
-# 模型下载
-运行model_download.py文件
-```shell
-cd scripts
-python model_download.py
-```
-
-# 模型调试
-模型测试请在model.py文件下的特定部分测试
-```python
-if __name__ == "__main__":
-    # 此处可编写调试代码
-    pass
-```
-
-# 启动后端服务
-运行main.py文件
-```shell
-cd ./scripts
-python main.py
-```
-打开API文档，测试接口功能：
-http://127.0.0.1:8000/docs
-
-# 注意事项：
-## 1. 模型输出为流式输出（和豆包一样），但无法在文档http://127.0.0.1:8000/docs中体现，需自行使用requests库实现
-## 2. 模型在有图片输入的情况下大约3-5分钟出结果，反正只需1-2min（RTX 4060），CPU时间x2
+## 快速开始
+1. 进入虚拟环境
+2. 运行主程序 main.py
+---

@@ -2,7 +2,7 @@ from typing import List
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from scripts.model import QWen3Doctor
+from .model import QWen3Doctor
 
 class Message(BaseModel):
     text: str
@@ -14,7 +14,7 @@ def load_model(path: str = ""):
 
 model = APIRouter()
 
-model_qw = load_model("../model/Qwen3-2B") # 模型文件路径
+model_qw = load_model("./model/qwen/Qwen3-VL-2B-Instruct") # 模型文件路径
 
 def stream_output(message: List[dict], num: int = 256):
     stream = model_qw.get_text_stream()
@@ -36,8 +36,8 @@ async def output(content: Message):
     if len(content['img']) > 0:
         for i in content['img']:
             msg[0]['content'].append({
-                "type": "image",
-                "image": i
+                "type": "Image",
+                "Image": i
             })
     return StreamingResponse(
         stream_output(msg, content["size"]),

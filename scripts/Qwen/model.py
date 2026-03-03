@@ -1,9 +1,7 @@
 from typing import List
-
 from transformers import Qwen3VLForConditionalGeneration, AutoProcessor, TextIteratorStreamer, AutoTokenizer
 import threading
 import torch
-from scripts.image.translation import NibabelImage
 
 
 class QWen3Doctor:
@@ -48,27 +46,20 @@ class QWen3Doctor:
 
 
 if __name__ == "__main__":
-    img1 = NibabelImage("../data/50/50/P2.nii.gz").to_video()
-    print(img1.shape)
+    model = QWen3Doctor("../../model/qwen/Qwen3-VL-2B-Instruct")
+    text_stream = model.get_text_stream()
     msg = [
         {
-            'role':'user',
-            'content':[
+            'role': 'user',
+            'content': [
                 {
                     'type': 'text',
-                    'text': "请根据视频，判断异常部位所在坐标"
+                    'text': "请介绍你自己"
                 }
             ]
         }
     ]
-    for frame in img1[20:141, :, :]:
-        msg[0]['content'].append({
-                    'type':'image',
-                    'image':frame,
-                })
-    model1 = QWen3Doctor('../model/Qwen/Qwen3-VL-2B-Instruct')
-    steam = model1.get_text_stream()
-    model1(msg, steam, 1024)
-    for i in steam:
-        print(i, end="", flush=True)
+    model(msg, text_stream)
+    for i in text_stream:
+        print(i, end='')
 
