@@ -6,7 +6,7 @@ model = Qwen3VLForConditionalGeneration.from_pretrained(
     "../model/Qwen/Qwen3-VL-2B-Instruct", dtype=torch.bfloat16, device_map="auto"
 )
 
-# We recommend enabling flash_attention_2 for better acceleration and memory saving, especially in multi-Image and video scenarios.
+# We recommend enabling flash_attention_2 for better acceleration and memory saving, especially in multi-img and video scenarios.
 # model = Qwen3VLForConditionalGeneration.from_pretrained(
 #     "../model/Qwen/Qwen3-VL-2B-Instruct",
 #     dtype=torch.bfloat16,
@@ -21,8 +21,8 @@ messages = [
         "role": "user",
         "content": [
             {
-                "type": "Image",
-                "Image": "D:/project_bidding/public/cad.jpg",
+                "type": "img",
+                "img": "D:/project_bidding/public/cad.jpg",
             },
             {"type": "text", "text": "图片中的女子名为deer，请描述图片中的内容，字数100字以内"},
         ],

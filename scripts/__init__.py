@@ -1,2 +1,2 @@
-from .Image import *
-from .Qwen import *
+from .img import *
+from .llm import *
