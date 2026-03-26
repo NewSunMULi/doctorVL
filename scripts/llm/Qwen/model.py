@@ -16,13 +16,18 @@ class QWen3Doctor:
     def __call__(self, messages: List[dict], text_stream: TextIteratorStreamer = None, new_token_num: int = 128):
         inputs = self.get_inputs(messages)
         inputs = inputs.to(self.model.device)
-        args = dict(
-            **inputs,
-            streamer = text_stream,
-            max_new_tokens=new_token_num
-        )
-        t = threading.Thread(target=self.model.generate, kwargs=args)
-        t.start()
+        if text_stream is not None:
+            args = dict(
+                **inputs,
+                streamer=text_stream,
+                max_new_tokens=new_token_num
+            )
+            t = threading.Thread(target=self.model.generate, kwargs=args)
+            t.start()
+            return 0
+        else:
+            output = self.model.generate(**inputs)
+            return self.processor.batch_decode(output, skip_special_tokens=True)
 
     def get_text_stream(self):
         return TextIteratorStreamer(self.tok, skip_prompt=True, skip_special_tokens=True)
@@ -46,7 +51,7 @@ class QWen3Doctor:
 
 
 if __name__ == "__main__":
-    model = QWen3Doctor("../../model/Qwen/Qwen3-VL-2B-Instruct")
+    model = QWen3Doctor("../../../model/Qwen/Qwen3-VL-2B-Instruct")
     text_stream = model.get_text_stream()
     msg = [
         {
