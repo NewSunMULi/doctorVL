@@ -129,7 +129,7 @@ class NibImage(Dataset):
 if __name__ == '__main__':
     train = NibImage('../../dataset/image/train/50/P1.nii.gz', '../../dataset/image/train/50/tumor.nii.gz', 64)
     model = UNet(in_channels=1, out_channels=2)
-    model.load_state_dict(torch.load('../../model/unet/unet.pth'))
+    model.load_state_dict(torch.load('../../../model/unet/unet.pth'))
     # 训练代码
     # criterion = nn.CrossEntropyLoss()
     # optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)

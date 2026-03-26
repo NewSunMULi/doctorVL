@@ -17,7 +17,7 @@ def load_model(path: str = ""):
 
 model = APIRouter()
 
-model_qw = load_model("./model/qwen/Qwen3-VL-2B-Instruct") # 模型文件路径
+model_qw = load_model("./model/Qwen/Qwen3-VL-2B-Instruct") # 模型文件路径
 
 def stream_output(message: List[dict], num: int = 256):
     stream = model_qw.get_text_stream()

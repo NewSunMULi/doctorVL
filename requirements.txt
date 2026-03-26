@@ -1,3 +1,5 @@
+requests
+pillow
 numpy
 matplotlib
 nibabel

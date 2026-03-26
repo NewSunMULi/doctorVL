@@ -46,7 +46,7 @@ class QWen3Doctor:
 
 
 if __name__ == "__main__":
-    model = QWen3Doctor("../../model/qwen/Qwen3-VL-2B-Instruct")
+    model = QWen3Doctor("../../model/Qwen/Qwen3-VL-2B-Instruct")
     text_stream = model.get_text_stream()
     msg = [
         {
