@@ -14,5 +14,5 @@ def show_img_one(img: np.ndarray):
 
 
 if __name__ == "__main__":
-    a = get_data("../../../dataset/image/train/50/P2.nii.gz")
+    a = get_data("filename.nii.gz")
     show_img_one(a[30])

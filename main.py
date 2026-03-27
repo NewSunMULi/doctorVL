@@ -1,12 +1,9 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-import scripts.llm.Qwen.api_model as api_model
 import uvicorn as uv
 
 app = FastAPI(title="API", openapi_url="/deer")
-
-app.include_router(api_model.model, prefix="/model", tags=["model"])
 
 app.add_middleware(
     CORSMiddleware,
