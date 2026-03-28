@@ -2,7 +2,6 @@ import matplotlib
 import numpy as np
 from PIL import Image
 import nibabel as nib
-import os
 
 
 def open_img(img_path):
@@ -30,7 +29,7 @@ def img_process(img: Image.Image, mask):
 
 
 def process_nii_gz(nii_path):
-    """处理nii.gz文件，输出可以作为sam3模型输入的图像tensor"""
+    """处理nii.gz文件,输出可以作为sam3模型输入的np.array"""
     # 读取nii.gz文件
     img = nib.load(nii_path)
     data = img.get_fdata()
@@ -39,7 +38,7 @@ def process_nii_gz(nii_path):
     if len(data.shape) != 3:
         raise ValueError("nii.gz文件必须是三维的")
     
-    print(data.shape)
+    return data
 
 
 if __name__ == "__main__":
