@@ -1,110 +1,169 @@
 # 医学图像智能分析系统
 
 ## 项目概述
-本项目是一个结合了视觉感知、语义理解与知识增强的医学图像智能分析系统。核心采用 **UNet** 模型进行高精度医学图像分割，并集成 **QWen3-VL (Vision-Language)** 多模态大模型。通过引入**医学知识库**，系统能够进行基于证据的推理与报告生成，显著提升分析的准确性与可信度。系统通过**FastAPI**提供服务，支持**C++ Qt6桌面客户端**与**Web (React+Next.js)** 两种前端进行交互，实现跨平台部署与应用。
+本项目是一个医学图像智能分析系统，结合了视觉分割和多模态大语言模型技术，能够对医学影像进行分割分析并生成智能报告。
 
-## 核心技术栈
-- **图像分割**: UNet (PyTorch 实现)
-- **多模态大模型**: QWen3-VL (基于 Transformers 库)
-- **知识检索与增强**: RAG (检索增强生成) 框架，向量数据库 (如Chroma, Milvus)
-- **后端服务**: FastAPI (Python)
-- **跨平台**: Windows / Linux (桌面与服务器)
+**适合新手的特点：**
+- 详细的安装步骤
+- 简单的运行指南
+- 清晰的项目结构说明
+- 常见问题解决方案
+
+## 核心功能
+1. **医学图像分割**：使用 UNet 和 Sam3 模型对医学影像进行分割
+2. **智能分析**：结合 Qwen3-VL 大语言模型生成分析报告
+3. **数据处理**：支持 NIfTI 格式医学影像的加载和处理
 
 ## 项目文件结构
-```
-MedImageAnalyzer/
-├── .venv/ 
-│
-├── dataset/                          # 数据集
-│   ├── image/                       # 原始医学图像 (如: .dcm, .nii, .png)
-│   │   ├── train/
-│   │   └── val/
-│   └── llm/                         # 与大模型训练/微调相关的文本资料
-│       ├── qa_pairs.json           # 医学影像QA对
-│       └── reports/                # 样例诊断报告文本
-│
-├── model/                           # 模型存储
-│   ├── unet/                       # UNet模型权重 (.pth)
-│   └── qwen/                       # QWen3-VL模型文件
-│
-├── knowledge_base/                  # 【仍在规划】医学知识库核心模块
-│   ├── raw_documents/              # 原始知识文档 (PDF, TXT, JSON)
-│   ├── processed/                  # 清洗、分段后的文本
-│   ├── vector_db/                  # 向量数据库存储与索引文件
-│   └── builder.py                  # 知识库构建脚本 (文档加载、分割、向量化、入库)
-│
-├── output/                          # 程序输出
-│   ├── uet/                       # UNet分割结果图像
-│   └── qwen/                       # 大模型生成的文本报告
-│
-├── scripts/                         # Python核心源代码
-│   ├── Image/                      # 图像分割模块
-│   │   ├── unet.py          # UNet模型定义及训练
-│   │   ├── showImg.py          # 图像查看
-│   │   └── u_api.py            # UNet API
-│   │
-│   ├── Qwen/                       # 大模型交互模块
-│   │   ├── model.py        # 大模型部署与微调
-│   │   ├── model_download.py       # 模型下载
-│   │   └── api_model.py       # 大模型 API
-│   │
-│   ├── kb_retriever/               # 【仍在规划】知识库检索模块
-│   │   ├── retriever.py           # 检索器：根据查询从向量库召回相关文档
-│   │   └── rerank.py              # (可选) 对召回结果进行重排序
-│   │
-│   ├── api.py                      # FastAPI应用主文件，提供REST端点
-│   ├── main.py                     # 本地测试与命令行主入口
-│   └── config.yaml                 # 全局配置文件
-│
-├── docs/                            # 项目文档
-├── requirements.txt                 # Python依赖列表
-├── docker-compose.yml              # 服务端容器化部署配置
-└── README.md                       # 本文件
-```
 
-## 系统工作流程
-1.  **上传与分割**：用户上传医学图像，服务端调用UNet模型生成分割掩膜。
-2.  **信息整合**：将原图、分割掩膜、用户可能的文本问题（如“这个结节是恶性可能大吗？”）整合为多模态查询。
-3.  **知识检索**：从`knowledge_base`中检索与当前查询最相关的医学文献、指南或病例片段（RAG）。
-4.  **推理与报告**：将`[原始图像]`、`[分割结果]`、`[用户问题]`和`[检索到的相关知识]`一同输入QWen3-VL模型，生成基于证据的分析报告。
-5.  **返回与展示**：服务端返回分割结果图和包含引用来源的智能报告，客户端进行可视化展示。
+```
+doctorVL/
+├── dataset/              # 数据集
+│   ├── image/           # 医学图像
+│   └── llm/             # 大模型相关数据
+├── model/               # 模型存储
+│   ├── Qwen/            # Qwen3 模型
+│   └── sam3/            # Sam3 模型
+├── scripts/             # 核心源代码
+│   ├── dataset/         # 数据集处理
+│   ├── img/             # 图像处理
+│   │   ├── sam3/        # Sam3 模型实现
+│   │   └── unet/        # UNet 模型实现
+│   ├── llm/             # 大语言模型
+│   │   └── Qwen/        # Qwen3 模型实现
+│   ├── example/         # 示例代码
+│   ├── api.py           # API 接口
+│   └── model.py         # 主模型类
+├── README.md            # 本文档
+└── requirements.txt     # 依赖列表
+```
 
 ## 环境配置
 
-1. 克隆项目至本地
-```bash
-git clone https://github.com/NewSunMULi/doctorVL.git
-```
-2. 安装依赖
-- 1. 安装pytorch及其配套库
+### 1. 安装 Python
+确保你的电脑上安装了 Python 3.8 或更高版本。
+
+### 2. 安装依赖
+
+1. 首先安装 PyTorch 和相关库：
 ```bash
 pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu126
 ```
-- 2. 安装剩下的依赖项
+
+2. 安装项目依赖：
 ```bash
 pip3 install -r requirements.txt
 ```
 
 ## 快速开始
-1. 进入虚拟环境
-2. 运行主程序 main.py
 
-## 未来扩展方向
-1.  **核心升级：知识库构建与增强**
-    *   **知识库构建**：实现自动化流水线，支持批量导入医学教科书、期刊论文、临床指南（PDF/XML），并完成文本提取、清洗、结构化分段。
-    *   **混合检索**：结合密集向量检索与关键词（BM25）检索，提高知识召回的查全率与查准率。
-    *   **知识图谱集成**：尝试与结构化医学知识图谱（如UMLS）关联，实现更深层次的逻辑推理。
-    *   **知识更新与评估**：建立知识库版本管理和效果评估机制，确保知识的时效性与准确性。
+### 方法 1：直接运行示例
 
-2.  **模型与算法**
-    *   **支持3D影像**：扩展至3D UNet，处理CT、MRI等体积数据。
-    *   **多模型集成**：除UNet外，集成SAM（Segment Anything Model）等通用模型进行交互式分割。
-    *   **大模型微调**：基于本地医学QA数据对QWen3-VL进行指令微调（SFT），使其术语和推理风格更专业化。
+1. 进入 scripts 目录：
+```bash
+cd scripts
+```
 
-3.  **系统与应用**
-    *   **DICOM全面支持**：深化对DICOM标准及序列的读取、处理和元信息利用。
-    *   **工作流与协作**：开发基于Web的用户管理、项目管理和分析历史对比功能，支持团队协作。
-    *   **主动学习平台**：构建界面，允许专家对模型输出（分割/报告）进行快速修正，并将修正数据回流至训练集，形成模型迭代闭环。
-    *   **边缘部署**：探索使用ONNX Runtime或TensorRT对UNet模型进行优化，以支持在边缘设备（如工作站）上的低延迟推理。
+2. 运行主程序：
+```bash
+python model.py
+```
 
-4.  **多模态知识库**：探索将影像特征与文本描述共同嵌入向量空间，构建“影像-文本”联合知识库，实现“以图搜图”和“以文搜图”的病例检索功能。
+### 方法 2：使用数据集进行训练
+
+1. 准备数据集：
+   - 将医学影像放入 `dataset/image/` 目录
+   - 创建 `dataset/llm/qa_pairs.json` 文件，格式如下：
+   ```json
+   [
+     {
+       "image": "path/to/image.nii.gz",
+       "label": "path/to/label.nii.gz",
+       "message": "请分析这个医学影像"
+     }
+   ]
+   ```
+
+2. 修改 `model.py` 中的数据集路径：
+```python
+dataset = DoctorDataset(root="../", data_path="dataset/llm/qa_pairs.json")
+```
+
+3. 运行训练：
+```bash
+python model.py
+```
+
+## 如何修改项目
+
+### 1. 修改模型参数
+
+在 `model.py` 文件中，你可以修改以下参数：
+
+- `num_epochs`：训练轮数
+- `batch_size`：批次大小
+- `learning_rate`：学习率
+
+示例：
+```python
+model.train(
+    train_dataset=dataset,
+    num_epochs=5,      # 减少训练轮数
+    batch_size=2,       # 减小批次大小
+    learning_rate=1e-5  # 减小学习率
+)
+```
+
+### 2. 添加新的图像处理功能
+
+在 `scripts/img/` 目录下添加新的处理函数，例如：
+
+```python
+# 在 imgProcess.py 中添加
+def new_processing_function(img):
+    """新的图像处理函数"""
+    # 处理逻辑
+    return processed_img
+```
+
+### 3. 修改大语言模型提示
+
+在 `scripts/llm/Qwen/model.py` 中修改提示模板：
+
+```python
+def get_input_img(self, img):
+    inputs = self.processor(images=img, text="请详细分析这个医学影像的异常情况", return_tensors="pt")
+    return inputs
+```
+
+## 常见问题
+
+### 1. 运行时出现内存不足错误
+**解决方案**：减小 `batch_size` 参数，例如设置为 1 或 2。
+
+### 2. 模型加载失败
+**解决方案**：确保模型文件存在于正确的路径，检查 `model_path` 参数。
+
+### 3. 数据加载错误
+**解决方案**：检查 JSON 文件格式是否正确，确保图像路径存在。
+
+## 项目扩展
+
+### 1. 添加新的模型
+
+在 `scripts/img/` 或 `scripts/llm/` 目录下创建新的模型类，继承现有的模型基类。
+
+### 2. 集成新的数据集
+
+修改 `scripts/dataset/dataset.py` 文件，添加对新数据集格式的支持。
+
+### 3. 开发 Web 界面
+
+使用 FastAPI 或 Flask 创建 Web 接口，在 `scripts/api.py` 中实现。
+
+## 技术支持
+
+如果遇到问题，可以：
+1. 检查代码中的注释
+2. 查看示例代码
+3. 参考 PyTorch 和 Transformers 官方文档
