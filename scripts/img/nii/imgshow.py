@@ -109,5 +109,5 @@ class NiiViewer:
         self.update_slice()
 
 if __name__ == '__main__':
-    file_path = "./dataset/image/train/50/P2.nii.gz"
+    file_path = "../../../dataset/image/train/50/P2.nii.gz"
     viewer = NiiViewer(file_path)

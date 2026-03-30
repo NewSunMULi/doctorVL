@@ -1,9 +1,9 @@
-from typing import List, Optional
-from transformers import Qwen3VLForConditionalGeneration, AutoProcessor, TextIteratorStreamer, AutoTokenizer
-from peft import LoraConfig, get_peft_model, TaskType
+from typing import List
+from transformers import Qwen3VLForConditionalGeneration, AutoProcessor, TextIteratorStreamer, AutoTokenizer, get_linear_schedule_with_warmup
+from peft import LoraConfig, get_peft_model
 import threading
 import torch
-import os
+from torch.utils.data import DataLoader
 
 
 class QWen3Doctor:
@@ -29,8 +29,6 @@ class QWen3Doctor:
         self.processor = AutoProcessor.from_pretrained(model_path_or_name)
         self.tok = AutoTokenizer.from_pretrained(model_path_or_name)
         self.dir = model_path_or_name
-        self.lora_config = None
-        self.peft_model = None
         self.device = self.model.device
 
     def __call__(self, messages: List[dict], text_stream: TextIteratorStreamer = None, new_token_num: int = 128):
@@ -51,8 +49,7 @@ class QWen3Doctor:
             inputs = inputs.to(self.device, non_blocking=True)
             
             # 使用混合精度推理
-            with torch.cuda.amp.autocast():
-                if text_stream is not None:
+            if text_stream is not None:
                     # 使用文本流进行流式输出
                     args = dict(
                         **inputs,
@@ -63,7 +60,7 @@ class QWen3Doctor:
                     t = threading.Thread(target=self.model.generate, kwargs=args)
                     t.start()
                     return 0
-                else:
+            else:
                     # 直接生成文本
                     output = self.model.generate(**inputs)
                     # 解码输出并跳过特殊 token
@@ -131,81 +128,78 @@ class QWen3Doctor:
             print(f"Error getting image inputs: {e}")
             return {}
 
-    def setup_lora(self, r: int = 8, lora_alpha: int = 32, lora_dropout: float = 0.1, 
-                   target_modules: Optional[List[str]] = None):
+    def train(self, dataset, batch_size=8, epochs=10, learning_rate=1e-4, lora_r=8, lora_alpha=16):
         """
-        设置 LoRA 配置
+        训练函数，使用 LoRA 微调 QWen3 多模态模型
         
         Args:
-            r: LoRA 秩，控制 LoRA 的容量
-            lora_alpha: LoRA 缩放因子
-            lora_dropout: LoRA dropout，防止过拟合
-            target_modules: 目标模块列表，默认包含注意力和前馈网络模块
+            dataset: 训练数据集，包含文本和图像等信息
+            batch_size: 批次大小
+            epochs: 训练轮数
+            learning_rate: 学习率
+            lora_r: LoRA 秩
+            lora_alpha: LoRA alpha 参数
+            
+        Returns:
+            训练后的模型
         """
-        if target_modules is None:
-            target_modules = ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
-        
-        self.lora_config = LoraConfig(
-            task_type=TaskType.CAUSAL_LM,  # 因果语言模型任务
-            r=r,
+        # 配置 LoRA
+        lora_config = LoraConfig(
+            r=lora_r,
             lora_alpha=lora_alpha,
-            lora_dropout=lora_dropout,
-            target_modules=target_modules,
-            inference_mode=False
+            target_modules=["q_proj", "v_proj"],
+            lora_dropout=0.05,
+            bias="none",
         )
         
-        self.peft_model = get_peft_model(self.model, self.lora_config)
-        self.peft_model.print_trainable_parameters()
-
-    def save_model(self, save_path: str):
-        """
-        保存模型
+        # 应用 LoRA 到模型
+        lora_model = get_peft_model(self.model, lora_config)
+        lora_model.train()
         
-        Args:
-            save_path: 保存路径
-        """
-        # 创建保存目录
-        os.makedirs(save_path, exist_ok=True)
+        # 准备数据集
+        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
         
-        try:
-            if self.peft_model is not None:
-                # 保存 LoRA 模型
-                self.peft_model.save_pretrained(save_path)
-                self.processor.save_pretrained(save_path)
-                self.tok.save_pretrained(save_path)
-                print(f"Model saved to {save_path}")
-            else:
-                # 保存基础模型
-                self.model.save_pretrained(save_path)
-                self.processor.save_pretrained(save_path)
-                self.tok.save_pretrained(save_path)
-                print(f"Base model saved to {save_path}")
-        except Exception as e:
-            print(f"Error saving model: {e}")
-
-    def load_lora_model(self, lora_path: str):
-        """
-        加载 LoRA 模型
+        # 优化器和学习率调度器
+        optimizer = torch.optim.AdamW(lora_model.parameters(), lr=learning_rate)
+        total_steps = len(dataloader) * epochs
+        scheduler = get_linear_schedule_with_warmup(
+            optimizer, num_warmup_steps=0, num_training_steps=total_steps
+        )
         
-        Args:
-            lora_path: LoRA 模型路径
-        """
-        try:
-            from peft import PeftModel
-            self.peft_model = PeftModel.from_pretrained(
-                self.model, 
-                lora_path,
-                torch_dtype=torch.bfloat16
-            )
-            self.peft_model.to(self.device)
-            print(f"LoRA model loaded from {lora_path}")
-        except Exception as e:
-            print(f"Error loading LoRA model: {e}")
+        # 训练循环
+        for epoch in range(epochs):
+            epoch_loss = 0.0
+            for step, (inputs, labels) in enumerate(dataloader):
+                # 移动数据到设备
+                inputs = inputs.to(self.device)
+                labels = labels.to(self.device)
+                
+                # 前向传播
+                outputs = lora_model(input_ids=inputs.input_ids, attention_mask=inputs.attention_mask, labels=labels)
+                
+                # 计算损失
+                loss = outputs.loss
+                
+                # 反向传播
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+                scheduler.step()
+                
+                epoch_loss += loss.item()
+                
+                if step % 100 == 0:
+                    print(f"Epoch {epoch+1}/{epochs}, Step {step}, Loss: {loss.item():.4f}")
+            
+            print(f"Epoch {epoch+1}/{epochs}, Average Loss: {epoch_loss/len(dataloader):.4f}")
+        
+        # 保存模型
+        lora_model.save_pretrained("./model/adapter/Qwen/Qwen3-VL-2B-Instruct")
 
 
 if __name__ == "__main__":
     # 测试 QWen3Doctor
-    model = QWen3Doctor("../../../model/Qwen/Qwen3-VL-2B-Instruct")
+    model = QWen3Doctor("./model/Qwen/Qwen3-VL-2B-Instruct")
     text_stream = model.get_text_stream()
     msg = [
         {
@@ -220,4 +214,4 @@ if __name__ == "__main__":
     ]
     model(msg, text_stream)
     for i in text_stream:
-        print(i, end='')
+        print(i, end='', flush=True)

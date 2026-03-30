@@ -2,6 +2,7 @@ import matplotlib
 import numpy as np
 from PIL import Image
 import nibabel as nib
+from torchvision import transforms
 
 
 def open_img(img_path):
@@ -70,13 +71,32 @@ def process_nii_gz(nii_path):
     # 读取nii.gz文件
     img = nib.load(nii_path)
     data = img.get_fdata()
+    transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Resize((256, 256)),
+    ])
+    data = transform(data).unsqueeze(1)
     
-    # 确保数据是三维的
-    if len(data.shape) != 3:
-        raise ValueError("nii.gz文件必须是三维的")
+    return data[50:171]
+
+
+def mask_process(nii_tensor):
+    """
+    处理掩码数据，输出可以作为 sam3 模型训练的掩码
     
-    return data
+    Args:
+        nii_tensor: 输入的掩码张量
+        
+    Returns:
+        处理后的掩码张量，形状为 (batch_size, 1, height, width)
+    """
+    # 确保掩码是二值的
+    nii_tensor = (nii_tensor > 0.5).float()
+    # 调整维度，确保形状正确
+    if len(nii_tensor.shape) == 3:
+        nii_tensor = nii_tensor.unsqueeze(1)
+    return nii_tensor
 
 
 if __name__ == "__main__":
-    process_nii_gz("./dataset/image/train/50/P2.nii.gz")
+    print(process_nii_gz("../../dataset/image/train/50/P2.nii.gz").shape)
