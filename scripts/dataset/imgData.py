@@ -2,22 +2,28 @@ import torch
 from torch.utils.data import Dataset
 from pathlib import Path
 import sys
+import random
+import torchvision.transforms as transforms
 
 project_root = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(project_root))
 from scripts.img.imgProcess import process_nii_gz, mask_process
 
 class ImgDataset(Dataset):
-    def __init__(self, nii_list, mask_list):
+    def __init__(self, nii_list, mask_list, use_augmentation=True, rotation_prob=0.5):
         """
         初始化 ImgDataset
         
         Args:
             nii_list: nii.gz 图像文件路径列表
             mask_list: nii.gz 掩码文件路径列表
+            use_augmentation: 是否使用数据增强
+            rotation_prob: 随机旋转的概率
         """
         self.nii_list = nii_list
         self.mask_list = mask_list
+        self.use_augmentation = use_augmentation
+        self.rotation_prob = rotation_prob
         self.data = None
         self.masks = None
         self._load_data()
@@ -58,24 +64,66 @@ class ImgDataset(Dataset):
         Returns:
             图像数据和对应的掩码
         """
-        return self.data[index], self.masks[index]
+        image = self.data[index]
+        mask = self.masks[index]
+        
+        # 应用数据增强
+        if self.use_augmentation and random.random() < self.rotation_prob:
+            # 随机选择旋转角度
+            angle = random.choice([90, 180, 270])
+            
+            # 对图像应用旋转
+            image = transforms.functional.rotate(image, angle)
+            # 对掩码应用相同的旋转
+            mask = transforms.functional.rotate(mask, angle)
+        
+        return image, mask
     
 if __name__ == "__main__":
     dataList = ['./dataset/image/train/50/ADC.nii.gz']
     maskList = ['./dataset/image/train/50/tumor.nii.gz']
-    dataset = ImgDataset(dataList, maskList)
-    img = dataset[50]
-    img1 = img[0].numpy()
-    img2 = img[1].numpy()
-    print(img1.shape)
-    print(img2.shape)
+    
+    # 测试数据增强功能
+    print("Testing with data augmentation...")
+    dataset = ImgDataset(dataList, maskList, use_augmentation=True, rotation_prob=1.0)  # 100%概率旋转
+    
+    # 获取原始数据
+    original_img, original_mask = dataset[50]
+    
+    # 获取增强后的数据
+    augmented_img, augmented_mask = dataset[50]
+    
+    print(f"Original image shape: {original_img.shape}")
+    print(f"Original mask shape: {original_mask.shape}")
+    print(f"Augmented image shape: {augmented_img.shape}")
+    print(f"Augmented mask shape: {augmented_mask.shape}")
+    
+    # 可视化结果
     import matplotlib
     matplotlib.use('QtAgg')
     import matplotlib.pyplot as plt
-    plt.figure(figsize=(10, 10))
-    plt.subplot(1, 2, 1)
-    plt.imshow(img1[0], cmap="gray")
-    plt.subplot(1, 2, 2)
-    plt.imshow(img2[0], cmap="gray")
+    plt.figure(figsize=(15, 10))
+    
+    plt.subplot(2, 2, 1)
+    plt.imshow(original_img[0].numpy(), cmap="gray")
+    plt.title("Original Image")
+    plt.axis('off')
+    
+    plt.subplot(2, 2, 2)
+    plt.imshow(original_mask[0].numpy(), cmap="gray")
+    plt.title("Original Mask")
+    plt.axis('off')
+    
+    plt.subplot(2, 2, 3)
+    plt.imshow(augmented_img[0].numpy(), cmap="gray")
+    plt.title("Augmented Image")
+    plt.axis('off')
+    
+    plt.subplot(2, 2, 4)
+    plt.imshow(augmented_mask[0].numpy(), cmap="gray")
+    plt.title("Augmented Mask")
+    plt.axis('off')
+    
+    plt.tight_layout()
     plt.show()
        

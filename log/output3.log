@@ -1,0 +1,82 @@
+root@crdnotebook-2038925125962694658-kk250-63984:~/private_data/doctorVL# python ./scripts/img/sam3/model.py 
+Loading weights: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 1468/1468 [00:06<00:00, 224.49it/s]
+Starting training...
+trainable params: 3,883,008 || all params: 844,259,382 || trainable%: 0.4599
+Epoch 1/6:   0%|                                                                                                                  | 0/41 [00:00<?, ?it/s]/usr/local/lib/python3.10/dist-packages/transformers/integrations/sdpa_attention.py:92: UserWarning: 1Torch was not compiled with memory efficient attention. (Triggered internally at /home/pytorch/aten/src/ATen/native/transformers/hip/sdp_utils.cpp:663.)
+  attn_output = torch.nn.functional.scaled_dot_product_attention(
+Epoch 1/6: 100%|████████████████████████████████████████████████████████████████████████████████████████████| 41/41 [01:57<00:00,  2.87s/it, loss=0.0154]
+Epoch 1/6, Loss: 0.015427731588005839
+Epoch 2/6: 100%|███████████████████████████████████████████████████████████████████████████████████████████| 41/41 [01:51<00:00,  2.71s/it, loss=0.00219]
+Epoch 2/6, Loss: 0.002193218057339148
+Epoch 3/6: 100%|██████████████████████████████████████████████████████████████████████████████████████████| 41/41 [01:51<00:00,  2.71s/it, loss=0.000923]
+Epoch 3/6, Loss: 0.0009234042031826769
+Epoch 4/6: 100%|██████████████████████████████████████████████████████████████████████████████████████████| 41/41 [01:51<00:00,  2.71s/it, loss=0.000698]
+Epoch 4/6, Loss: 0.0006978445971759445
+Epoch 5/6: 100%|██████████████████████████████████████████████████████████████████████████████████████████| 41/41 [01:50<00:00,  2.70s/it, loss=0.000584]
+Epoch 5/6, Loss: 0.0005841403489750697
+Epoch 6/6: 100%|██████████████████████████████████████████████████████████████████████████████████████████| 41/41 [01:50<00:00,  2.70s/it, loss=0.000553]
+Epoch 6/6, Loss: 0.000552934196936648
+模型已保存到 ./model/sam3_lora
+Training completed!
+
+Testing model performance...
+Tested 10/108 samples
+Tested 20/108 samples
+Tested 30/108 samples
+Tested 40/108 samples
+Tested 50/108 samples
+Tested 60/108 samples
+Tested 70/108 samples
+Tested 80/108 samples
+Tested 90/108 samples
+Tested 100/108 samples
+
+Test Results:
+Average IoU: 0.7440
+Average Dice: 0.8153
+Test completed with IoU: 0.7440, Dice: 0.8153
+root@crdnotebook-2038925125962694658-kk250-63984:~/private_data/doctorVL# python ./scripts/img/sam3/model.py 
+Loading weights: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 1468/1468 [00:08<00:00, 177.39it/s]
+
+Testing model performance...
+/usr/local/lib/python3.10/dist-packages/transformers/integrations/sdpa_attention.py:92: UserWarning: 1Torch was not compiled with memory efficient attention. (Triggered internally at /home/pytorch/aten/src/ATen/native/transformers/hip/sdp_utils.cpp:663.)
+  attn_output = torch.nn.functional.scaled_dot_product_attention(
+Tested 10/108 samples
+Tested 20/108 samples
+Tested 30/108 samples
+Tested 40/108 samples
+Tested 50/108 samples
+Tested 60/108 samples
+Tested 70/108 samples
+Tested 80/108 samples
+Tested 90/108 samples
+Tested 100/108 samples
+
+Test Results:
+Average IoU: 0.1592
+Average Dice: 0.1988
+Test completed with IoU: 0.1592, Dice: 0.1988
+root@crdnotebook-2038925125962694658-kk250-63984:~/private_data/doctorVL# python ./scripts/img/sam3/model.py 
+Loading weights: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 1468/1468 [00:06<00:00, 213.29it/s]
+trainable params: 0 || all params: 844,259,382 || trainable%: 0.0000
+LoRA适配器已从 ./model/sam3_lora 加载
+LoRA加载测试成功
+
+Testing model performance...
+/usr/local/lib/python3.10/dist-packages/transformers/integrations/sdpa_attention.py:92: UserWarning: 1Torch was not compiled with memory efficient attention. (Triggered internally at /home/pytorch/aten/src/ATen/native/transformers/hip/sdp_utils.cpp:663.)
+  attn_output = torch.nn.functional.scaled_dot_product_attention(
+Tested 10/108 samples
+Tested 20/108 samples
+Tested 30/108 samples
+Tested 40/108 samples
+Tested 50/108 samples
+Tested 60/108 samples
+Tested 70/108 samples
+Tested 80/108 samples
+Tested 90/108 samples
+Tested 100/108 samples
+
+Test Results:
+Average IoU: 0.7431
+Average Dice: 0.8145
+Test completed with IoU: 0.7431, Dice: 0.8145

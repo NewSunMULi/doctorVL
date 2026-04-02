@@ -1,0 +1,146 @@
+root@crdnotebook-2038925125962694658-kk250-63984:~/private_data/doctorVL# python ./scripts/img/sam3/model.py 
+Loading weights: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 1468/1468 [00:07<00:00, 209.10it/s]
+Starting training...
+^CTraceback (most recent call last):
+  File "/root/private_data/doctorVL/./scripts/img/sam3/model.py", line 259, in <module>
+    trained_model = model.train(
+  File "/root/private_data/doctorVL/./scripts/img/sam3/model.py", line 106, in train
+    self.model = get_peft_model(self.model, lora_config)
+  File "/usr/local/lib/python3.10/dist-packages/peft/mapping_func.py", line 122, in get_peft_model
+    return MODEL_TYPE_TO_PEFT_MODEL_MAPPING[peft_config.task_type](
+  File "/usr/local/lib/python3.10/dist-packages/peft/peft_model.py", line 2966, in __init__
+    super().__init__(model, peft_config, adapter_name, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/peft/peft_model.py", line 129, in __init__
+    self.base_model = cls(model, {adapter_name: peft_config}, adapter_name)
+  File "/usr/local/lib/python3.10/dist-packages/peft/tuners/tuners_utils.py", line 298, in __init__
+    self.inject_adapter(self.model, adapter_name, low_cpu_mem_usage=low_cpu_mem_usage, state_dict=state_dict)
+  File "/usr/local/lib/python3.10/dist-packages/peft/tuners/tuners_utils.py", line 804, in inject_adapter
+    self._create_and_replace(
+  File "/usr/local/lib/python3.10/dist-packages/peft/tuners/lora/model.py", line 250, in _create_and_replace
+    new_module = self._create_new_module(lora_config, adapter_name, target, device_map=device_map, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/peft/tuners/lora/model.py", line 337, in _create_new_module
+    new_module = dispatcher(target, adapter_name, lora_config=lora_config, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/peft/tuners/lora/layer.py", line 2282, in dispatch_default
+    new_module = Linear(target, adapter_name, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/peft/tuners/lora/layer.py", line 619, in __init__
+    LoraLayer.__init__(self, base_layer, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/peft/tuners/lora/layer.py", line 107, in __init__
+    self.lora_B = nn.ModuleDict({})
+  File "/usr/local/lib/python3.10/dist-packages/torch/nn/modules/container.py", line 496, in __init__
+    super().__init__()
+  File "/usr/local/lib/python3.10/dist-packages/torch/nn/modules/module.py", line 508, in __init__
+    super().__setattr__("_state_dict_hooks", OrderedDict())
+KeyboardInterrupt
+
+root@crdnotebook-2038925125962694658-kk250-63984:~/private_data/doctorVL# python ./scripts/img/sam3/model.py 
+Loading weights: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 1468/1468 [00:05<00:00, 250.10it/s]
+Starting training...
+trainable params: 3,883,008 || all params: 844,259,382 || trainable%: 0.4599
+Epoch 1/10:   0%|                                                                                                                 | 0/41 [00:00<?, ?it/s]/usr/local/lib/python3.10/dist-packages/transformers/integrations/sdpa_attention.py:92: UserWarning: 1Torch was not compiled with memory efficient attention. (Triggered internally at /home/pytorch/aten/src/ATen/native/transformers/hip/sdp_utils.cpp:663.)
+  attn_output = torch.nn.functional.scaled_dot_product_attention(
+Epoch 1/10: 100%|███████████████████████████████████████████████████████████████████████████████████████████| 41/41 [01:57<00:00,  2.88s/it, loss=0.0116]
+Epoch 1/10, Loss: 0.011587930867368946
+Epoch 2/10: 100%|██████████████████████████████████████████████████████████████████████████████████████████| 41/41 [01:51<00:00,  2.72s/it, loss=0.00192]
+Epoch 2/10, Loss: 0.0019236789880002418
+Epoch 3/10:  54%|███████████████████████████████████████████████▊                                         | 22/41 [00:59<00:51,  2.72s/it, loss=0.000747]Epoch 3/10:  54%|███████████████████████████████████████████████▊                                         | 22/41 [01:02<00:54,  2.85s/it, loss=0.000747]
+Traceback (most recent call last):
+  File "/root/private_data/doctorVL/./scripts/img/sam3/model.py", line 259, in <module>
+    trained_model = model.train(
+  File "/root/private_data/doctorVL/./scripts/img/sam3/model.py", line 164, in train
+    total_loss += loss.item()
+KeyboardInterrupt
+
+root@crdnotebook-2038925125962694658-kk250-63984:~/private_data/doctorVL# python ./scripts/img/sam3/model.py 
+Loading weights: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 1468/1468 [00:06<00:00, 213.46it/s]
+Starting training...
+trainable params: 3,883,008 || all params: 844,259,382 || trainable%: 0.4599
+Epoch 1/2:   0%|                                                                                                                  | 0/41 [00:00<?, ?it/s]/usr/local/lib/python3.10/dist-packages/transformers/integrations/sdpa_attention.py:92: UserWarning: 1Torch was not compiled with memory efficient attention. (Triggered internally at /home/pytorch/aten/src/ATen/native/transformers/hip/sdp_utils.cpp:663.)
+  attn_output = torch.nn.functional.scaled_dot_product_attention(
+Epoch 1/2: 100%|█████████████████████████████████████████████████████████████████████████████████████████████| 41/41 [01:58<00:00,  2.88s/it, loss=0.017]
+Epoch 1/2, Loss: 0.017047861434814588
+Epoch 2/2: 100%|███████████████████████████████████████████████████████████████████████████████████████████| 41/41 [01:51<00:00,  2.71s/it, loss=0.00292]
+Epoch 2/2, Loss: 0.002917253875128198
+模型已保存到 ./model/sam3_lora
+Training completed!
+
+Testing model performance...
+Tested 10/108 samples
+Tested 20/108 samples
+Tested 30/108 samples
+Tested 40/108 samples
+Tested 50/108 samples
+Tested 60/108 samples
+Tested 70/108 samples
+Tested 80/108 samples
+Tested 90/108 samples
+Tested 100/108 samples
+
+Test Results:
+Average IoU: 0.5138
+Average Dice: 0.5969
+Test completed with IoU: 0.5138, Dice: 0.5969
+root@crdnotebook-2038925125962694658-kk250-63984:~/private_data/doctorVL# python ./scripts/img/sam3/model.py 
+Loading weights: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 1468/1468 [00:07<00:00, 191.23it/s]
+Starting training...
+trainable params: 3,883,008 || all params: 844,259,382 || trainable%: 0.4599
+Epoch 1/3:   0%|                                                                                                                  | 0/41 [00:00<?, ?it/s]/usr/local/lib/python3.10/dist-packages/transformers/integrations/sdpa_attention.py:92: UserWarning: 1Torch was not compiled with memory efficient attention. (Triggered internally at /home/pytorch/aten/src/ATen/native/transformers/hip/sdp_utils.cpp:663.)
+  attn_output = torch.nn.functional.scaled_dot_product_attention(
+Epoch 1/3: 100%|████████████████████████████████████████████████████████████████████████████████████████████| 41/41 [01:57<00:00,  2.88s/it, loss=0.0247]
+Epoch 1/3, Loss: 0.024664777041435604
+Epoch 2/3: 100%|███████████████████████████████████████████████████████████████████████████████████████████| 41/41 [01:51<00:00,  2.71s/it, loss=0.00844]
+Epoch 2/3, Loss: 0.008436316578853421
+Epoch 3/3: 100%|███████████████████████████████████████████████████████████████████████████████████████████| 41/41 [01:50<00:00,  2.70s/it, loss=0.00176]
+Epoch 3/3, Loss: 0.0017618629506437062
+模型已保存到 ./model/sam3_lora
+Training completed!
+
+Testing model performance...
+Tested 10/108 samples
+Tested 20/108 samples
+Tested 30/108 samples
+Tested 40/108 samples
+Tested 50/108 samples
+Tested 60/108 samples
+Tested 70/108 samples
+Tested 80/108 samples
+Tested 90/108 samples
+Tested 100/108 samples
+
+Test Results:
+Average IoU: 0.6361
+Average Dice: 0.7367
+Test completed with IoU: 0.6361, Dice: 0.7367
+root@crdnotebook-2038925125962694658-kk250-63984:~/private_data/doctorVL# python ./scripts/img/sam3/model.py 
+Loading weights: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 1468/1468 [00:05<00:00, 251.16it/s]
+Starting training...
+trainable params: 3,883,008 || all params: 844,259,382 || trainable%: 0.4599
+Epoch 1/4:   0%|                                                                                                                  | 0/41 [00:00<?, ?it/s]/usr/local/lib/python3.10/dist-packages/transformers/integrations/sdpa_attention.py:92: UserWarning: 1Torch was not compiled with memory efficient attention. (Triggered internally at /home/pytorch/aten/src/ATen/native/transformers/hip/sdp_utils.cpp:663.)
+  attn_output = torch.nn.functional.scaled_dot_product_attention(
+Epoch 1/4: 100%|████████████████████████████████████████████████████████████████████████████████████████████| 41/41 [01:58<00:00,  2.88s/it, loss=0.0119]
+Epoch 1/4, Loss: 0.011911045033030393
+Epoch 2/4: 100%|███████████████████████████████████████████████████████████████████████████████████████████| 41/41 [01:50<00:00,  2.69s/it, loss=0.00207]
+Epoch 2/4, Loss: 0.0020706829722834433
+Epoch 3/4: 100%|██████████████████████████████████████████████████████████████████████████████████████████| 41/41 [01:50<00:00,  2.70s/it, loss=0.000986]
+Epoch 3/4, Loss: 0.0009856508510959585
+Epoch 4/4: 100%|██████████████████████████████████████████████████████████████████████████████████████████| 41/41 [01:50<00:00,  2.68s/it, loss=0.000673]
+Epoch 4/4, Loss: 0.0006731567491220719
+模型已保存到 ./model/sam3_lora
+Training completed!
+
+Testing model performance...
+Tested 10/108 samples
+Tested 20/108 samples
+Tested 30/108 samples
+Tested 40/108 samples
+Tested 50/108 samples
+Tested 60/108 samples
+Tested 70/108 samples
+Tested 80/108 samples
+Tested 90/108 samples
+Tested 100/108 samples
+
+Test Results:
+Average IoU: 0.7181
+Average Dice: 0.7812
+Test completed with IoU: 0.7181, Dice: 0.7812
+root@crdnotebook-2038925125962694658-kk250-63984:~/private_data/doctorVL# 

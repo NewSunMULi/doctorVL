@@ -246,7 +246,7 @@ if __name__ == "__main__":
     model = Sam3Doctor("./model/sam3/sam3-8b5")
     
     # 测试训练
-    test_nii_list = ["./dataset/image/train/50/T2.nii.gz"]
+    test_nii_list = ["./dataset/image/train/50/P4.nii.gz"]
     test_mask_list = ["./dataset/image/train/50/tumor.nii.gz"]
         
     dataset1 = ImgDataset(test_nii_list, test_mask_list)
@@ -261,12 +261,12 @@ if __name__ == "__main__":
         print("注意：这是正常的，因为可能还没有训练过LoRA模型")
 
     # 测试模型性能
-    print("\nTesting model performance...")
-    iou, dice = model.test(test_nii_list, test_mask_list)
-    print(f"Test completed with IoU: {iou:.4f}, Dice: {dice:.4f}")
+    # print("\nTesting model performance...")
+    # iou, dice = model.test(test_nii_list, test_mask_list)
+    # print(f"Test completed with IoU: {iou:.4f}, Dice: {dice:.4f}")
 
     # 可视化测试结果
-    img = dataset1[5]
+    img = dataset1[10]
     op = model(img[0], text="tumor")
     print(f"Model output shape: {op.shape}")
     
