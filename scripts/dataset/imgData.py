@@ -1,7 +1,11 @@
 import torch
-from ..img.imgProcess import process_nii_gz, mask_process
 from torch.utils.data import Dataset
+from pathlib import Path
+import sys
 
+project_root = Path(__file__).resolve().parent.parent.parent
+sys.path.insert(0, str(project_root))
+from scripts.img.imgProcess import process_nii_gz, mask_process
 
 class ImgDataset(Dataset):
     def __init__(self, nii_list, mask_list):
@@ -55,3 +59,23 @@ class ImgDataset(Dataset):
             图像数据和对应的掩码
         """
         return self.data[index], self.masks[index]
+    
+if __name__ == "__main__":
+    dataList = ['./dataset/image/train/50/P2.nii.gz']
+    maskList = ['./dataset/image/train/50/tumor.nii.gz']
+    dataset = ImgDataset(dataList, maskList)
+    img = dataset[50]
+    img1 = img[0].numpy()
+    img2 = img[1].numpy()
+    print(img1.shape)
+    print(img2.shape)
+    import matplotlib
+    matplotlib.use('QtAgg')
+    import matplotlib.pyplot as plt
+    plt.figure(figsize=(10, 10))
+    plt.subplot(1, 2, 1)
+    plt.imshow(img1[0], cmap="gray")
+    plt.subplot(1, 2, 2)
+    plt.imshow(img2[0], cmap="gray")
+    plt.show()
+       

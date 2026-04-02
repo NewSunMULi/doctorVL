@@ -28,5 +28,5 @@ class DoctorDataset(Dataset):
         llm_index = self.data[idx]["llm_index"]
 
 if __name__ == "__main__":
-    dataset = DoctorDataset(data_path="../../dataset/dataset.json", preload=True)
+    dataset = DoctorDataset(data_path="./dataset/dataset.json", preload=True)
     print(dataset[0])
