@@ -252,7 +252,7 @@ if __name__ == "__main__":
     dataset1 = ImgDataset(test_nii_list, test_mask_list)
     
     # 测试加载LoRA适配器
-    lora_path = './model/sam3_lora'
+    lora_path = './model/sam3_lora (2)'
     try:
         model.load_lora(lora_path)
         print("LoRA加载测试成功")
