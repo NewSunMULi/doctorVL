@@ -61,7 +61,7 @@ class ImgDataset(Dataset):
         return self.data[index], self.masks[index]
     
 if __name__ == "__main__":
-    dataList = ['./dataset/image/train/50/P2.nii.gz']
+    dataList = ['./dataset/image/train/50/ADC.nii.gz']
     maskList = ['./dataset/image/train/50/tumor.nii.gz']
     dataset = ImgDataset(dataList, maskList)
     img = dataset[50]

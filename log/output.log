@@ -1,0 +1,22 @@
+root@crdnotebook-2038925125962694658-kk250-70809:~/private_data/doctorVL# python ./scripts/img/sam3/model.py
+Loading weights: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1468/1468 [00:06<00:00, 210.61it/s]
+trainable params: 0 || all params: 842,317,878 || trainable%: 0.0000
+LoRA适配器已从 ./model/sam3_lora 加载
+LoRA加载测试成功
+
+Testing model performance...
+/usr/local/lib/python3.10/dist-packages/transformers/integrations/sdpa_attention.py:92: UserWarning: 1Torch was not compiled with memory efficient attention. (Triggered internally at /home/pytorch/aten/src/ATen/native/transformers/hip/sdp_utils.cpp:663.)
+  attn_output = torch.nn.functional.scaled_dot_product_attention(
+Tested 10/81 samples
+Tested 20/81 samples
+Tested 30/81 samples
+Tested 40/81 samples
+Tested 50/81 samples
+Tested 60/81 samples
+Tested 70/81 samples
+Tested 80/81 samples
+
+Test Results:
+Average IoU: 0.7626
+Average Dice: 0.8204
+Test completed with IoU: 0.7626, Dice: 0.8204

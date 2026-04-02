@@ -6,8 +6,9 @@ sys.path.insert(0, str(project_root))
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from transformers import Sam3Processor, Sam3Model, get_linear_schedule_with_warmup
-from peft import LoraConfig, get_peft_model
+from peft import LoraConfig, get_peft_model, PeftModel
 from PIL import Image
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -49,16 +50,9 @@ class Sam3Doctor:
 
         with torch.no_grad():
             outputs = self.model(**inputs)
-        return outputs.pred_masks[:, 0:1, :, :][0]
-        # 后处理输出
-        output = self.processor.post_process_instance_segmentation(
-            outputs,
-            threshold=0.5,  # 置信度阈值
-            mask_threshold=0.5,  # 掩码阈值
-            target_sizes=inputs.get("original_sizes").tolist()
-        )[0]
 
-        return output['masks']
+        # 只返回第一个实例的掩码
+        return outputs.pred_masks[:, 0:1, :, :]
 
     def load_lora(self, lora_path):
         """
@@ -145,7 +139,6 @@ class Sam3Doctor:
                 pred_masks = outputs.pred_masks[:, 0:1, :, :]  # 选择第一个实例，保持通道维度
                 
                 # 调整大小以匹配标签形状
-                import torch.nn.functional as F
                 pred_masks = F.interpolate(pred_masks, size=masks.shape[2:], mode='bilinear', align_corners=False)
                 
                 # 应用sigmoid激活函数，确保输出在[0,1]范围内
@@ -173,14 +166,88 @@ class Sam3Doctor:
         self.processor.save_pretrained(output_dir)
         print(f"模型已保存到 {output_dir}")
 
+    def test(self, nii_list, mask_list, threshold=0.5):
+        """
+        测试模型，计算分割准确率
+        
+        Args:
+            nii_list: nii.gz 图像文件路径列表
+            mask_list: nii.gz 掩码文件路径列表
+            threshold: 预测阈值
+            
+        Returns:
+            iou: 平均IoU值
+            dice: 平均Dice系数
+        """
+        # 创建数据集和数据加载器
+        dataset = ImgDataset(nii_list, mask_list)
+        dataloader = DataLoader(dataset, batch_size=1, shuffle=False)
+        
+        # 初始化评估指标
+        total_iou = 0
+        total_dice = 0
+        num_samples = 0
+        
+        # 测试模式
+        self.model.eval()
+        
+        with torch.no_grad():
+            for batch_idx, (images, masks) in enumerate(dataloader):
+                # 将数据移至设备
+                images = images.to(self.device)
+                masks = masks.to(self.device)
+                
+                # 预处理输入
+                inputs = self.processor(images=images, text="tumor", return_tensors="pt").to(self.device)
+                
+                # 前向传播
+                outputs = self.model(**inputs)
+                
+                # 处理输出形状：选择第一个实例并调整大小以匹配标签
+                pred_masks = outputs.pred_masks[:, 0:1, :, :]  # 选择第一个实例，保持通道维度
+                
+                # 调整大小以匹配标签形状
+                pred_masks = F.interpolate(pred_masks, size=masks.shape[2:], mode='bilinear', align_corners=False)
+                
+                # 应用sigmoid激活函数并阈值化
+                pred_masks = torch.sigmoid(pred_masks) > threshold
+                pred_masks = pred_masks.float()
+                
+                # 计算IoU
+                intersection = torch.sum(pred_masks * masks)
+                union = torch.sum(pred_masks) + torch.sum(masks) - intersection
+                iou = intersection / (union + 1e-8)
+                
+                # 计算Dice系数
+                dice = (2 * intersection) / (torch.sum(pred_masks) + torch.sum(masks) + 1e-8)
+                
+                # 累加指标
+                total_iou += iou.item()
+                total_dice += dice.item()
+                num_samples += 1
+                
+                # 打印进度
+                if (batch_idx + 1) % 10 == 0:
+                    print(f"Tested {batch_idx + 1}/{len(dataloader)} samples")
+        
+        # 计算平均值
+        avg_iou = total_iou / num_samples
+        avg_dice = total_dice / num_samples
+        
+        print(f"\nTest Results:")
+        print(f"Average IoU: {avg_iou:.4f}")
+        print(f"Average Dice: {avg_dice:.4f}")
+        
+        return avg_iou, avg_dice
+
 
 if __name__ == "__main__":
     # 测试 Sam3Doctor
     model = Sam3Doctor("./model/sam3/sam3-8b5")
     
     # 测试训练
-    test_nii_list = ["./dataset/image/train/50/P1.nii.gz", "./dataset/image/train/50/P2.nii.gz", "./dataset/image/train/50/P3.nii.gz"]
-    test_mask_list = ["./dataset/image/train/50/tumor.nii.gz"] * 3
+    test_nii_list = ["./dataset/image/train/50/T2.nii.gz"]
+    test_mask_list = ["./dataset/image/train/50/tumor.nii.gz"]
         
     dataset1 = ImgDataset(test_nii_list, test_mask_list)
     
@@ -193,13 +260,51 @@ if __name__ == "__main__":
         print(f"LoRA加载测试失败: {e}")
         print("注意：这是正常的，因为可能还没有训练过LoRA模型")
 
-    img = dataset1[50]
+    # 测试模型性能
+    print("\nTesting model performance...")
+    iou, dice = model.test(test_nii_list, test_mask_list)
+    print(f"Test completed with IoU: {iou:.4f}, Dice: {dice:.4f}")
+
+    # 可视化测试结果
+    img = dataset1[5]
     op = model(img[0], text="tumor")
-    import matplotlib.pyplot as plt
+    print(f"Model output shape: {op.shape}")
+    
+    # 调整大小并阈值化
+    pred_masks = F.interpolate(op, size=img[1].unsqueeze(0).shape[2:], mode='bilinear', align_corners=False)
+    pred_masks = torch.sigmoid(pred_masks) > 0.5
+    pred_masks = pred_masks.float()
+    print(f"Processed mask shape: {pred_masks.shape}")
+
+    # 计算单个样本的IoU和Dice
+    masks = img[1].unsqueeze(0)
+    intersection = torch.sum(pred_masks * masks)
+    union = torch.sum(pred_masks) + torch.sum(masks) - intersection
+    iou_single = intersection / (union + 1e-8)
+    dice_single = (2 * intersection) / (torch.sum(pred_masks) + torch.sum(masks) + 1e-8)
+    print(f"Single sample IoU: {iou_single.item():.4f}")
+    print(f"Single sample Dice: {dice_single.item():.4f}")
+
+    # 可视化结果
     import matplotlib
     matplotlib.use('QtAgg')
-    plt.subplot(1, 2, 1)
-    plt.imshow(op[0].numpy(), cmap='gray')
-    plt.subplot(1, 2, 2)
-    plt.imshow(img[1][0].numpy(), cmap='gray')
+    import matplotlib.pyplot as plt
+    plt.figure(figsize=(15, 5))
+    plt.subplot(1, 3, 1)
+    plt.imshow(img[0][0].numpy(), cmap="gray")
+    plt.title("Input Image")
+    plt.axis('off')
+    
+    plt.subplot(1, 3, 2)
+    plt.imshow(pred_masks[0][0].numpy(), cmap="gray")
+    plt.title("Predicted Mask")
+    plt.axis('off')
+    
+    plt.subplot(1, 3, 3)
+    plt.imshow(img[1][0].numpy(), cmap="gray")
+    plt.title("Ground Truth")
+    plt.axis('off')
+    
+    plt.tight_layout()
     plt.show()
+        

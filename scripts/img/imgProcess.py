@@ -77,7 +77,7 @@ def process_nii_gz(nii_path):
     ])
     data = transform(data).unsqueeze(1)
     
-    return data[50:171]
+    return data[89:116]
 
 
 def mask_process(nii_tensor):
