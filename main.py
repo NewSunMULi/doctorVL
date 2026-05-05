@@ -16,7 +16,7 @@ import torch
 import torch.nn.functional as F
 import uvicorn as uv
 
-from model import DoctorVL
+from scripts.model import DoctorVL
 
 app = FastAPI(title="DoctorVL API", description="医学影像处理与分析 API", openapi_url="/deer")
 
