@@ -68,7 +68,7 @@ class Sam3Doctor:
         self.processor = Sam3Processor.from_pretrained(lora_path)
         print(f"LoRA适配器已从 {lora_path} 加载")
 
-    def train(self, nii_list, mask_list, output_dir, batch_size=4, epochs=10, learning_rate=1e-4, lora_r=8, lora_alpha=16, text_prompt=""):
+    def train(self, nii_list, mask_list, output_dir, batch_size=1, epochs=10, learning_rate=1e-4, lora_r=4, lora_alpha=8, text_prompt=""):
         """
         训练Sam3模型
         
@@ -243,16 +243,18 @@ class Sam3Doctor:
 
 if __name__ == "__main__":
     # 测试 Sam3Doctor
-    model = Sam3Doctor("./model/sam3/sam3-8b5")
+    root = str(project_root)
+    model = Sam3Doctor(root + "/model/sam3/sam3-8b5")
     
     # 测试训练
-    test_nii_list = ["./dataset/image/train/50/P4.nii.gz"]
-    test_mask_list = ["./dataset/image/train/50/tumor.nii.gz"]
-        
+    test_nii_list = [root + "/dataset/image/train/50/P5.nii.gz", root + "/dataset/image/train/50/P6.nii.gz", root + "/dataset/image/train/50/P7.nii.gz"]
+    test_mask_list = [root + "/dataset/image/train/50/tumor.nii.gz"] * 3
     dataset1 = ImgDataset(test_nii_list, test_mask_list)
+
+    # model.train(nii_list=dataset1.nii_list, mask_list=dataset1.mask_list, output_dir="./model/sam3_lora")
     
     # 测试加载LoRA适配器
-    lora_path = './model/sam3_lora (2)'
+    lora_path = root + '/model/sam3_lora'
     try:
         model.load_lora(lora_path)
         print("LoRA加载测试成功")
@@ -261,50 +263,49 @@ if __name__ == "__main__":
         print("注意：这是正常的，因为可能还没有训练过LoRA模型")
 
     # 测试模型性能
-    # print("\nTesting model performance...")
-    # iou, dice = model.test(test_nii_list, test_mask_list)
-    # print(f"Test completed with IoU: {iou:.4f}, Dice: {dice:.4f}")
+    print("\nTesting model performance...")
+    iou, dice = model.test(test_nii_list, test_mask_list)
+    print(f"Test completed with IoU: {iou:.4f}, Dice: {dice:.4f}")
 
-    # 可视化测试结果
-    img = dataset1[10]
-    op = model(img[0], text="tumor")
-    print(f"Model output shape: {op.shape}")
-    
-    # 调整大小并阈值化
-    pred_masks = F.interpolate(op, size=img[1].unsqueeze(0).shape[2:], mode='bilinear', align_corners=False)
-    pred_masks = torch.sigmoid(pred_masks) > 0.5
-    pred_masks = pred_masks.float()
-    print(f"Processed mask shape: {pred_masks.shape}")
-
-    # 计算单个样本的IoU和Dice
-    masks = img[1].unsqueeze(0)
-    intersection = torch.sum(pred_masks * masks)
-    union = torch.sum(pred_masks) + torch.sum(masks) - intersection
-    iou_single = intersection / (union + 1e-8)
-    dice_single = (2 * intersection) / (torch.sum(pred_masks) + torch.sum(masks) + 1e-8)
-    print(f"Single sample IoU: {iou_single.item():.4f}")
-    print(f"Single sample Dice: {dice_single.item():.4f}")
-
-    # 可视化结果
-    import matplotlib
-    matplotlib.use('QtAgg')
-    import matplotlib.pyplot as plt
-    plt.figure(figsize=(15, 5))
-    plt.subplot(1, 3, 1)
-    plt.imshow(img[0][0].numpy(), cmap="gray")
-    plt.title("Input Image")
-    plt.axis('off')
-    
-    plt.subplot(1, 3, 2)
-    plt.imshow(pred_masks[0][0].numpy(), cmap="gray")
-    plt.title("Predicted Mask")
-    plt.axis('off')
-    
-    plt.subplot(1, 3, 3)
-    plt.imshow(img[1][0].numpy(), cmap="gray")
-    plt.title("Ground Truth")
-    plt.axis('off')
-    
-    plt.tight_layout()
-    plt.show()
+    # # 可视化测试结果
+    # img = dataset1[10]
+    # op = model(img[0], text="tumor")
+    # print(f"Model output shape: {op.shape}")
+    #
+    # # 调整大小并阈值化
+    # pred_masks = F.interpolate(op, size=img[1].unsqueeze(0).shape[2:], mode='bilinear', align_corners=False)
+    # pred_masks = torch.sigmoid(pred_masks) > 0.5
+    # pred_masks = pred_masks.float().cpu()
+    # print(f"Processed mask shape: {pred_masks.shape}")
+    #
+    # # 计算单个样本的IoU和Dice
+    # masks = img[1].unsqueeze(0).cpu()
+    # intersection = torch.sum(pred_masks * masks)
+    # union = torch.sum(pred_masks) + torch.sum(masks) - intersection
+    # iou_single = intersection / (union + 1e-8)
+    # dice_single = (2 * intersection) / (torch.sum(pred_masks) + torch.sum(masks) + 1e-8)
+    # print(f"Single sample IoU: {iou_single.item():.4f}")
+    # print(f"Single sample Dice: {dice_single.item():.4f}")
+    #
+    # # 可视化结果
+    # import matplotlib
+    # import matplotlib.pyplot as plt
+    # plt.figure(figsize=(15, 5))
+    # plt.subplot(1, 3, 1)
+    # plt.imshow(img[0][0].numpy(), cmap="gray")
+    # plt.title("Input Image")
+    # plt.axis('off')
+    #
+    # plt.subplot(1, 3, 2)
+    # plt.imshow(pred_masks[0][0].numpy(), cmap="gray")
+    # plt.title("Predicted Mask")
+    # plt.axis('off')
+    #
+    # plt.subplot(1, 3, 3)
+    # plt.imshow(img[1][0].numpy(), cmap="gray")
+    # plt.title("Ground Truth")
+    # plt.axis('off')
+    #
+    # plt.tight_layout()
+    # plt.show()
         

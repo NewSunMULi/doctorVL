@@ -1,0 +1,18 @@
+(.venv) PS F:\public_data\doctorVL> python .\scripts\img\sam3\model.py
+Loading weights: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1468/1468 [00:00<00:00, 4348.13it/s]
+trainable params: 0 || all params: 844,259,382 || trainable%: 0.0000
+LoRA适配器已从 ./model/sam3_lora 加载
+LoRA加载测试成功
+Model output shape: torch.Size([1, 1, 288, 288])
+Processed mask shape: torch.Size([1, 1, 256, 256])
+Single sample IoU: 0.9516
+Single sample Dice: 0.9752
+(.venv) PS F:\public_data\doctorVL> python .\scripts\img\sam3\model.py
+Loading weights: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1468/1468 [00:00<00:00, 7139.15it/s]
+trainable params: 0 || all params: 844,259,382 || trainable%: 0.0000
+LoRA适配器已从 ./model/sam3_lora 加载
+LoRA加载测试成功
+Model output shape: torch.Size([1, 1, 288, 288])
+Processed mask shape: torch.Size([1, 1, 256, 256])
+Single sample IoU: 0.5033
+Single sample Dice: 0.6696
